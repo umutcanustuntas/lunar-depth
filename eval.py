@@ -25,11 +25,8 @@ def main():
 	pred_depth_files = sorted(os.listdir(args.preds_folder))
 
 
-
-	print(gt_depth_files)
-	print(pred_depth_files)
-	print(args.visualize)
-	print(args.threshold)
+	for pred_file, gt_file in zip(gt_depth_files, pred_depth_files):
+		pass
 
 
 if __name__ == '__main__':
