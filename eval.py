@@ -2,7 +2,8 @@ import argparse
 import os
 import numpy as np
 
-
+from metrics import evaluate
+from PIL import Image
 
 def args_parser():
 	parser = argparse.ArgumentParser(prog="DepthEval",
@@ -26,8 +27,18 @@ def main():
 
 
 	for pred_file, gt_file in zip(gt_depth_files, pred_depth_files):
-		pass
+		pred_file = os.path.join(args.preds_folder, pred_file)
+		gt_file = os.path.join(args.gt_folder, gt_file)
+		pred_image = Image.open(pred_file)
+		gt_image = Image.open(gt_file)
 
 
+		pred_arr = np.array(pred_image)
+		gt_arr = np.array(gt_image)
+#		gt_arr = gt_arr + np.ones(gt_arr.shape)
+
+		evaluate(gt=gt_arr, pred=pred_arr)
+
+		break
 if __name__ == '__main__':
 	main()

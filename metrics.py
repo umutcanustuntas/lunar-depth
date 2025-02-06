@@ -20,7 +20,7 @@ def rmse(gt, pred):
 def rmse_log(gt, pred):
 	log_diff = np.square(np.log(pred) - np.log(gt)).mean()
 
-	return np.sqrt(rmse_log)
+	return np.sqrt(log_diff)
 
 def accuracy(gt, pred, thres=1.25):
 	delta = np.maximum(pred/gt, gt/pred)
