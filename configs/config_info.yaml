@@ -1,0 +1,8 @@
+aligment_max_res: 1000
+  
+min_depth: 1e-7
+max_depth: 1.0
+scale_factor: 255.0
+input_width: 720
+input_height: 1280
+crop_params: {}

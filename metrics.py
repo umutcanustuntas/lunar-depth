@@ -1,53 +1,54 @@
-import torch
 import numpy as np
+from alignment import align_depth_least_square
+
+def compute_metrics(gt, pred):
+    if gt.shape != pred.shape:
+        raise ValueError(f"Shape mismatch: GT shape {gt.shape} and pred shape {pred.shape}")
+    
+    valid_mask = (gt > 0)
+    gt_valid = gt[valid_mask]
+    pred_valid = pred[valid_mask]
 
 
-def abs_rel(gt, pred):
-	diff = np.abs(pred - gt) / gt
-
-	return diff.mean()
-
-def sq_rel(gt, pred):
-	diff = np.square(pred - gt) / gt
-
-	return diff.mean()
-
-def rmse(gt, pred):
-	diff = np.square(pred - gt).mean()
-
-	return np.sqrt(diff)
-
-def rmse_log(gt, pred):
-	log_diff = np.square(np.log(pred) - np.log(gt)).mean()
-
-	return np.sqrt(log_diff)
-
-def accuracy(gt, pred, thres=1.25):
-	delta = np.maximum(pred/gt, gt/pred)
-	valid = delta < thres
-	return valid.mean()
-
-def evaluate(gt, pred):
-
-	abs_rel_score = abs_rel(gt, pred)
-	sq_rel_score = sq_rel(gt, pred)
-	rmse_score = rmse(gt, pred)
-	rmse_log_score = rmse_log(gt, pred)
-
-	acc_1 = accuracy(gt, pred, 1.25)
-	acc_2 = accuracy(gt, pred, 1.25**2)
-	acc_3 = accuracy(gt, pred, 1.25**3)
-
-	print(f"abs_rel_score: {abs_rel_score}")
-	print(f"sq_rel_score: {sq_rel_score}")
-	print(f"rmse_score: {rmse_score}")
-	print(f"rmse_log_score: {rmse_log_score}")
-	print(f"acc_1: {acc_1}")
-	print(f"acc_2: {acc_2}")
-	print(f"acc_3: {acc_3}")
-
-def main():
-	print("Testing...")
-
-if __name__ == '__main__':
-	main()
+    eps = 1e-6
+    gt_valid = np.maximum(gt_valid, eps)
+    pred_valid = np.maximum(pred_valid, eps)
+    
+    abs_rel = np.mean(np.abs(gt_valid - pred_valid) / gt_valid)
+    sq_rel = np.mean(np.square(gt_valid - pred_valid) / gt_valid)
+    rmse = np.sqrt(np.mean(np.square(gt_valid - pred_valid)))
+    rmse_log = np.sqrt(np.mean(np.square(np.log(gt_valid) - np.log(pred_valid))))
+    log10 = np.mean(np.abs(np.log10(gt_valid) - np.log10(pred_valid)))
+    
+    thresh = np.maximum((gt_valid / pred_valid), (pred_valid / gt_valid))
+    delta1 = np.mean(thresh < 1.25)
+    delta2 = np.mean(thresh < 1.25**2)
+    delta3 = np.mean(thresh < 1.25**3)
+    
+    log_diff = np.log(pred_valid) - np.log(gt_valid)
+    si_log = np.mean(log_diff**2) - np.mean(log_diff)**2
+    
+    f_a = np.mean(np.abs(gt_valid - pred_valid) < 0.5)
+    print(f"Abs Rel: {abs_rel}")
+    print(f"Sq Rel: {sq_rel}")
+    print(f"RMSE: {rmse}")
+    print(f"RMSE Log: {rmse_log}")
+    print(f"Log10: {log10}" )
+    print(f"δ1: {delta1}")
+    print(f"δ2: {delta2}")
+    print(f"δ3: {delta3}")
+    print(f"SI_log: {si_log}")
+    print(f"F_A: {f_a}")  
+    
+    return {
+        "Abs Rel": abs_rel,
+        "Sq Rel": sq_rel,
+        "RMSE": rmse,
+        "RMSE Log": rmse_log,
+        "Log10": log10,
+        "δ1": delta1,
+        "δ2": delta2,
+        "δ3": delta3,
+        "SI_log": si_log,
+        "F_A": f_a
+    }
