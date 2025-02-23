@@ -4,7 +4,7 @@ import cv2
 import os
 from pathlib import Path
 
-MAX_UINT16 = 65000
+MAX_UINT16 = 150
 
 
 def read_pfm(path):
