@@ -5,7 +5,10 @@ def compute_metrics(gt, pred):
     if gt.shape != pred.shape:
         raise ValueError(f"Shape mismatch: GT shape {gt.shape} and pred shape {pred.shape}")
     
-    valid_mask = (gt > 0)
+    valid_mask = (gt > 0)    
+    if valid_mask.sum() < 100:
+        print("Warning: Too few valid pixels for reliable metrics")
+
     gt_valid = gt[valid_mask]
     pred_valid = pred[valid_mask]
 

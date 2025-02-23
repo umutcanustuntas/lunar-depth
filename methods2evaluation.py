@@ -7,13 +7,11 @@ from scipy.optimize import least_squares
 from alignment import align_depth_least_square, disparity2depth, depth2disparity
 
 
-
 class ConfigLoader:
     @staticmethod
     def load_config(config_path):
         with open(config_path, 'r') as f:
             return yaml.safe_load(f)
-
 
 
 class DepthPreprocessor:
@@ -47,19 +45,17 @@ class DepthPreprocessor:
         
         For GT images (png) the depth is divided by scale_factor.
         For .npy files, if not is_gt, we multiply by max_depth unless the
-        --pred_metric flag is set.
+        --absolute_depth flag is set.
         """
-        ext = os.path.splitext(path)[1].lower()
         
-        if ext == '.npy':
+        if path.endswith('.npy'):
             depth = np.load(path)
             if not is_gt and not self.args.absolute_depth:
                 depth = depth * self.max_depth # if max depth is 1 nothing change, else it will be scaled to max_depth from 0-1
-        elif ext == '.png':
+        elif path.endswith('.png'):
             depth = np.array(Image.open(path)).astype(np.float32)
             if is_gt:
                 depth = depth / self.scale_factor # in png format some data is given more precise which is larger than real depth interval
-        #elif ext == '.fmt': that will be implemented in near feature
 
         return depth
 
@@ -71,8 +67,7 @@ class DepthPreprocessor:
         return pred * scale
 
 
-    def process_depth(self, pred_path, gt_path=None):
-        print("GT path:", gt_path, "Pred path:", pred_path)
+    def process_depth(self, pred_path, gt_path=None):            
         # Load depths
         pred = self.load_depth(pred_path, is_gt=False)  
         gt = self.load_depth(gt_path, is_gt=True)
@@ -86,7 +81,6 @@ class DepthPreprocessor:
         
 
         # Resize prediction to match GT if necessary
-        print(f"Resizing prediction from {pred.shape} to {gt.shape}")
         if self.args and self.args.resize:
             pred = cv2.resize(pred, (gt.shape[1], gt.shape[0]), interpolation=cv2.INTER_LINEAR)
         elif pred.shape != gt.shape:
@@ -95,10 +89,11 @@ class DepthPreprocessor:
             print("Because of the warning, resizing prediction to match GT shape. \
                     In order to prevent this caution, please use --resize flag.")
 
+        
         # Create valid mask (non-zero pixels in ground truth)
         valid_mask = (gt > 0)
 
-        # Check dataset configuration: absolute_depth flag
+        # Check dataset configuration: relative or absolute depth
         if self.args and self.args.relative_depth:
             # Perform least squares alignment in disparity space
             if self.args.disparity:
@@ -129,7 +124,7 @@ class DepthPreprocessor:
 
 
         elif self.args and self.args.absolute_depth:
-            # For relative depth (e.g., lunarSim), apply median scaling
+            # For absolute depth (e.g., depthpro), apply median scaling
             if valid_mask.sum() > 0:
                 pred = self.apply_median_scaling(pred, gt)
             else:
@@ -141,30 +136,7 @@ class DepthPreprocessor:
 
         pred = np.clip(pred, a_min=self.min_depth, a_max=self.max_depth)
         pred = np.clip(pred, a_min=1e-6, a_max=None)
-        print("Pred min:", pred.min(), "max:", pred.max())
-        print("GT min:", gt.min(), "max:", gt.max())
-
-        valid_mask = (gt > self.min_depth) & (gt < self.max_depth) & (pred > self.min_depth) & (pred < self.max_depth)
-        gt_valid = gt[valid_mask]
-        pred_valid = pred[valid_mask]
-    
-
-        if valid_mask.sum() < 100:
-            print("Warning: Too few valid pixels for reliable metrics")
-
+        
 
         return pred, gt
     
-
-
-
-
-if __name__ == "__main__":
-    print("Testing unified pipeline...")
-    preprocessor = DepthPreprocessor(dataset_name='kitti', model_name='adabins',
-                                     pipeline_name="pipeline")
-    pred_path = "path/to/prediction.png"
-    gt_path = "path/to/ground_truth.png"
-    if os.path.exists(pred_path) and os.path.exists(gt_path):
-        processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path)
-        print("Processed shapes:", processed_pred.shape, processed_gt.shape)

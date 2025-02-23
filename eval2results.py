@@ -11,9 +11,7 @@ def args_parser():
     parser.add_argument("gt_folder")
     parser.add_argument("preds_folder")
     parser.add_argument("--config_info", type=str, default="config_info")
-    #parser.add_argument("-t", "--threshold", type=float, default=1.25)
     parser.add_argument("--disparity", action="store_true")
-    #parser.add_argument("--alignment", action="store_true")
     parser.add_argument("--absolute_depth", action="store_true")
 
 
@@ -46,7 +44,7 @@ def main():
         "F_A": 0.0
     }
     metrics_keys = total.keys()
-    i = 0.0
+    
     for pred_file, gt_file in zip(pred_depth_files, gt_depth_files):
         pred_path = os.path.join(args.preds_folder, pred_file)
         gt_path = os.path.join(args.gt_folder, gt_file)
@@ -65,12 +63,12 @@ def main():
 
         if result is None:
             continue
-        i += 1
+        
         for metric in metrics_keys:
             total[metric] += result[metric]
 
     for metric in metrics_keys:
-        print(metric,": ", total[metric]/i)
+        print(metric,": ", total[metric]/ len(pred_depth_files))
 
 if __name__ == '__main__':
     main()
