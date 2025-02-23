@@ -6,5 +6,5 @@ python eval2results.py ground_truth/ predictions/ \
 
 python eval2results.py ground_truth/ predictions/ \
     --config_info config_info \
-    --relative \
+    --relative_depth \
     --resize
