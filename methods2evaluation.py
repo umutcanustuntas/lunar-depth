@@ -69,7 +69,7 @@ class DepthPreprocessor:
 
     def process_depth(self, pred_path, gt_path=None):            
         # Load depths
-        pred = self.load_depth(pred_path, is_gt=False)  
+        pred = self.load_depth(pred_path, is_gt=False)
         gt = self.load_depth(gt_path, is_gt=True)
         if pred is None or gt is None:
             raise ValueError("Either the prediction or ground truth depth map is None")
@@ -97,7 +97,7 @@ class DepthPreprocessor:
         if self.args and self.args.relative_depth:
             # Perform least squares alignment in disparity space
             if self.args.disparity:
-                gt_disparity, gt_non_neg_mask = disparity2depth(depth=gt, return_mask=True)
+                gt_disparity, gt_non_neg_mask = disparity2depth(disparity=gt, return_mask=True)
                 pred_non_neg_mask = pred > 0
                 valid_nonnegative_mask = valid_mask & gt_non_neg_mask & pred_non_neg_mask
             
