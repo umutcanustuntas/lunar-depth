@@ -67,14 +67,17 @@ class DepthPreprocessor:
         For .npy files, if not is_gt, we multiply by max_depth unless the
         --absolute_depth flag is set.
         """
+        print("max distance:", max_distance)
         if path.endswith('.npy'):
             depth = np.load(path)
             if not is_gt and not self.args.absolute_depth:
                 depth = depth * self.max_depth # if max depth is 1 nothing change, else it will be scaled to max_depth from 0-1
+
         elif path.endswith('.png'):
             depth = np.array(Image.open(path)).astype(np.float32)
             if is_gt:
                 depth = depth / self.scale_factor # in png format some data is given more precise which is larger than real depth interval
+
         elif path.endswith('.pfm'):
             depth = self.load_pfm(path)
             print("depth min max:", depth.min(), depth.max())
@@ -104,7 +107,6 @@ class DepthPreprocessor:
         pred = np.squeeze(pred)
         gt = np.squeeze(gt)
 
-
         # Resize prediction to match GT if necessary
         if self.args and self.args.resize:
             pred = cv2.resize(pred, (gt.shape[1], gt.shape[0]), interpolation=cv2.INTER_LINEAR)
@@ -113,7 +115,6 @@ class DepthPreprocessor:
             pred = cv2.resize(pred, (gt.shape[1], gt.shape[0]), interpolation=cv2.INTER_LINEAR)
             print("Because of the warning, resizing prediction to match GT shape. \
                     In order to prevent this caution, please use --resize flag.")
-
         
         # Create valid mask (non-zero pixels in ground truth)
         valid_mask = (gt > 0)

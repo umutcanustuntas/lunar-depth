@@ -99,7 +99,7 @@ def main():
                 
                 print(f"\nEvaluating {pred_file}:")
                 print(f"GT: {gt_path}")
-                processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path)
+                processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path, args.max_gt_distance)
                 
                 print("Processed shapes:", processed_pred.shape, processed_gt.shape)
                 
@@ -180,7 +180,7 @@ def main():
                 
                 print(f"\nEvaluating {pred_file}:")
                 print(f"GT: {gt_path}")
-                processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path)
+                processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path, args.max_gt_distance)
                 
                 print("Processed shapes:", processed_pred.shape, processed_gt.shape)
                 # Pass the dataset-specific absolute_depth flag into compute_metrics.
