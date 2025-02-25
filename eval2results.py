@@ -113,6 +113,10 @@ def main():
 
         input("Press Enter to continue...")
 
+    print("\nTotal results:")
+    for metric in metrics_keys:
+        print(metric,": ", total[metric]/ len(pred_depth_files))
+
 
 if __name__ == '__main__':
     main()
