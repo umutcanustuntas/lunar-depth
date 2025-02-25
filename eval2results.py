@@ -69,9 +69,6 @@ def main():
         #print("Processed shapes:", processed_pred.shape, processed_gt.shape)
 
 
-
-
-
         if args.shadow_mask:
             # Get the base name without extension
             base_name = os.path.splitext(pred_file)[0]
@@ -116,13 +113,11 @@ def main():
                 target_color = np.array([187, 70, 156])
             
             # Create binary mask where True only for exact color matches
-            labeling_mask = np.all(labeling_img == target_color, axis=2)
+            labeling_mask = np.all(labeling_img != target_color, axis=2)
             
-            processed_pred = processed_pred * labeling_mask
-            processed_gt = processed_gt * labeling_mask
-
-
-
+            processed_pred[labeling_mask]= 0
+            processed_gt[labeling_mask]= 0
+            
 
 
         # Pass the dataset-specific absolute_depth flag into compute_metrics.
