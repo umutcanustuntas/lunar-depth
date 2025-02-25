@@ -18,6 +18,7 @@ def args_parser():
     parser.add_argument("--scale", action="store_true")
     parser.add_argument("--relative_depth", action="store_true")
     parser.add_argument("--resize", action="store_true")
+    parser.add_argument("--max_gt_distance", type=int, default=100)
 
 
     return parser.parse_args()
@@ -51,8 +52,11 @@ def main():
         
         print(f"\nEvaluating {pred_file}:")
         print(f"GT: {gt_path}")
+        print(f"Max Distance: {args.max_gt_distance}")
 
-        processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path)
+        max_gt_distance = int(args.max_gt_distance)
+
+        processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path, max_gt_distance)
         
         print("Processed shapes:", processed_pred.shape, processed_gt.shape)
         # Pass the dataset-specific absolute_depth flag into compute_metrics.

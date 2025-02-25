@@ -38,8 +38,28 @@ class DepthPreprocessor:
         # Load crop parameters
         self.crop_params = self.config_info.get('crop_params', {})
         
+    def load_pfm(self, file_path):
+        with open(file_path, 'rb') as f:
+            header = f.readline().decode('utf-8').rstrip()
+            if header == 'PF':
+                color = True
+            elif header == 'Pf':
+                color = False
+            else:
+                raise ValueError('Not a PFM file.')
 
-    def load_depth(self, path, is_gt=False):
+            dims = f.readline().decode('utf-8').strip()
+            width, height = map(int, dims.split())
+
+            scale = float(f.readline().decode('utf-8').strip())
+            endian = '<' if scale < 0 else '>'
+
+            data = np.fromfile(f, endian + 'f')
+            shape = (height, width, 3) if color else (height, width)
+
+            return np.reshape(data, shape)
+        
+    def load_depth(self, path,max_distance=450, is_gt=False):
         print("Loading depth...")
         """Load depth with proper scaling.
         
@@ -47,7 +67,6 @@ class DepthPreprocessor:
         For .npy files, if not is_gt, we multiply by max_depth unless the
         --absolute_depth flag is set.
         """
-        
         if path.endswith('.npy'):
             depth = np.load(path)
             if not is_gt and not self.args.absolute_depth:
@@ -56,6 +75,13 @@ class DepthPreprocessor:
             depth = np.array(Image.open(path)).astype(np.float32)
             if is_gt:
                 depth = depth / self.scale_factor # in png format some data is given more precise which is larger than real depth interval
+        elif path.endswith('.pfm'):
+            depth = self.load_pfm(path)
+            print("depth min max:", depth.min(), depth.max())
+            mask = depth > max_distance
+            depth[mask] = 0
+            if is_gt:
+                depth = depth / depth.max()# in png format some data is given more precise which is larger than real depth interval
 
         return depth
 
@@ -67,18 +93,17 @@ class DepthPreprocessor:
         return pred * scale
 
 
-    def process_depth(self, pred_path, gt_path=None):            
+    def process_depth(self, pred_path, gt_path=None,max_distance=100):            
         # Load depths
         pred = self.load_depth(pred_path, is_gt=False)
-        gt = self.load_depth(gt_path, is_gt=True)
+        gt = self.load_depth(gt_path, max_distance=max_distance, is_gt=True)
         if pred is None or gt is None:
             raise ValueError("Either the prediction or ground truth depth map is None")
- 
 
         # Squeeze to remove any extra singleton dimensions
         pred = np.squeeze(pred)
         gt = np.squeeze(gt)
-        
+
 
         # Resize prediction to match GT if necessary
         if self.args and self.args.resize:
@@ -92,9 +117,13 @@ class DepthPreprocessor:
         
         # Create valid mask (non-zero pixels in ground truth)
         valid_mask = (gt > 0)
-
+        print("before alignment")
+        print("gt min max ", gt.min(), gt.max())
+        print("pred min max ", pred.min(), pred.max())
+        
         # Check dataset configuration: relative or absolute depth
         if self.args and self.args.relative_depth:
+            print("Performing disparity alignment...")
             # Perform least squares alignment in disparity space
             if self.args.disparity:
                 gt_disparity, gt_non_neg_mask = disparity2depth(disparity=gt, return_mask=True)
@@ -113,6 +142,7 @@ class DepthPreprocessor:
                 pred = disparity2depth(disparity_pred)
 
             else:
+                print( "Disparity alignment skipped.")
                 # Perform least squares alignment in depth space
                 pred, scale, shift = align_depth_least_square(
                     gt_arr=gt,
@@ -133,7 +163,10 @@ class DepthPreprocessor:
         else: # No alignment
             print("Alignment skipped.")
 
-
+        print("after alignment")
+        print("gt min max ", gt.min(), gt.max())
+        print("pred min max ", pred.min(), pred.max())
+        # Clip to min and max depth values
         pred = np.clip(pred, a_min=self.min_depth, a_max=self.max_depth)
         pred = np.clip(pred, a_min=1e-6, a_max=None)
         
