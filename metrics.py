@@ -5,9 +5,11 @@ def compute_metrics(gt, pred):
     if gt.shape != pred.shape:
         raise ValueError(f"Shape mismatch: GT shape {gt.shape} and pred shape {pred.shape}")
     
-    valid_mask = (gt > 0)    
-    if valid_mask.sum() < 100:
+    valid_mask = np.greater(gt, 0)    
+    min_valid_pixels = gt.shape[0] * gt.shape[1] * 0.000000000000000001
+    if valid_mask.sum() < min_valid_pixels:
         print("Warning: Too few valid pixels for reliable metrics")
+        return None
 
     gt_valid = gt[valid_mask]
     pred_valid = pred[valid_mask]
@@ -28,10 +30,13 @@ def compute_metrics(gt, pred):
     delta2 = np.mean(thresh < 1.25**2)
     delta3 = np.mean(thresh < 1.25**3)
     
+    #print("THRESH: " , thresh)
+
     log_diff = np.log(pred_valid) - np.log(gt_valid)
     si_log = np.mean(log_diff**2) - np.mean(log_diff)**2
     
     f_a = np.mean(np.abs(gt_valid - pred_valid) < 0.5)
+    """
     print(f"Abs Rel: {abs_rel}")
     print(f"Sq Rel: {sq_rel}")
     print(f"RMSE: {rmse}")
@@ -42,7 +47,7 @@ def compute_metrics(gt, pred):
     print(f"δ3: {delta3}")
     print(f"SI_log: {si_log}")
     print(f"F_A: {f_a}")  
-    
+    """
     return {
         "Abs Rel": abs_rel,
         "Sq Rel": sq_rel,
