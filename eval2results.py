@@ -19,7 +19,7 @@ def args_parser():
     parser.add_argument("--relative_depth", action="store_true")
     parser.add_argument("--resize", action="store_true")
     parser.add_argument("--max_gt_distance", type=int, default=100)
-
+    parser.add_argument("--per_scene", action="store_true")
 
     return parser.parse_args()
 
@@ -51,67 +51,89 @@ def main():
 
     gt_lists =[]
     
-    for i in scenes:
-        temp = []
-        for j in gt_depth_files:
-            if i in j:
-                temp.append(j)
-        gt_lists.append(temp)
+    if args.per_scene:
+        for i in scenes:
+            temp = []
+            for j in gt_depth_files:
+                if i in j:
+                    temp.append(j)
+            gt_lists.append(temp)
 
-    pred_lists =[]
-    
-    for i in scenes:
-        temp = []
-        for j in pred_depth_files:
-            if i in j:
-                temp.append(j)
-        pred_lists.append(temp)
+        pred_lists =[]
+
+        for i in scenes:
+            temp = []
+            for j in pred_depth_files:
+                if i in j:
+                    temp.append(j)
+            pred_lists.append(temp)
         
-    for pred_files, gt_files in zip(pred_lists, gt_lists):
-        print(f"\nEvaluating {pred_files}:")
+        for pred_files, gt_files in zip(pred_lists, gt_lists):
 
-        temp = {
-            "Abs Rel": 0.0,
-            "Sq Rel": 0.0,
-            "RMSE": 0.0,
-            "RMSE Log": 0.0,
-            "Log10": 0.0,
-            "δ1": 0.0,
-            "δ2": 0.0,
-            "δ3": 0.0,
-            "SI_log": 0.0,
-            "F_A": 0.0
-        }
-        for pred_file, gt_file in zip(pred_files, gt_files):
+            temp = {
+                "Abs Rel": 0.0,
+                "Sq Rel": 0.0,
+                "RMSE": 0.0,
+                "RMSE Log": 0.0,
+                "Log10": 0.0,
+                "δ1": 0.0,
+                "δ2": 0.0,
+                "δ3": 0.0,
+                "SI_log": 0.0,
+                "F_A": 0.0
+            }
+            for pred_file, gt_file in zip(pred_files, gt_files):
 
-            pred_path = os.path.join(args.preds_folder, pred_file)
-            gt_path = os.path.join(args.gt_folder, gt_file)
-            
-            print(f"\nEvaluating {pred_file}:")
-            print(f"GT: {gt_path}")
-            processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path)
-            
-            print("Processed shapes:", processed_pred.shape, processed_gt.shape)
-            # Pass the dataset-specific absolute_depth flag into compute_metrics.
-            result = compute_metrics(
-                gt=processed_gt, 
-                pred=processed_pred,
-            )
+                pred_path = os.path.join(args.preds_folder, pred_file)
+                gt_path = os.path.join(args.gt_folder, gt_file)
+                
+                print(f"\nEvaluating {pred_file}:")
+                print(f"GT: {gt_path}")
+                processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path)
+                
+                print("Processed shapes:", processed_pred.shape, processed_gt.shape)
+                # Pass the dataset-specific absolute_depth flag into compute_metrics.
+                result = compute_metrics(
+                    gt=processed_gt, 
+                    pred=processed_pred,
+                )
 
-            if result is None:
-                continue
+                if result is None:
+                    continue
+                
+                for metric in metrics_keys:
+                    temp[metric] += result[metric]
+                    total[metric] += result[metric]
             
+            print("\nResults of", pred_files[0].split("_")[0])
             for metric in metrics_keys:
-                temp[metric] += result[metric]
-                total[metric] += result[metric]
-        
-        print("\nResults of", pred_files[0].split("_")[0])
-        for metric in metrics_keys:
-            temp[metric] /= len(pred_files)
-            print(f"{metric}: {temp[metric]:.4f}")
-        print("\n")
+                temp[metric] /= len(pred_files)
+                print(f"{metric}: {temp[metric]:.4f}")
+            print("\n")
 
-        input("Press Enter to continue...")
+            input("Press Enter to continue...")
+    else:
+        for pred_file, gt_file in zip(pred_depth_files, gt_depth_files):
+
+                pred_path = os.path.join(args.preds_folder, pred_file)
+                gt_path = os.path.join(args.gt_folder, gt_file)
+                
+                print(f"\nEvaluating {pred_file}:")
+                print(f"GT: {gt_path}")
+                processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path)
+                
+                print("Processed shapes:", processed_pred.shape, processed_gt.shape)
+                # Pass the dataset-specific absolute_depth flag into compute_metrics.
+                result = compute_metrics(
+                    gt=processed_gt, 
+                    pred=processed_pred,
+                )
+
+                if result is None:
+                    continue
+                for metric in metrics_keys:
+                    total[metric] += result[metric]
+
 
     print("\nTotal results:")
     for metric in metrics_keys:
