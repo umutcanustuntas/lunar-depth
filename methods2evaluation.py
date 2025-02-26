@@ -80,9 +80,10 @@ class DepthPreprocessor:
 
         elif path.endswith('.pfm'):
             depth = self.load_pfm(path)
-            print("depth min max:", depth.min(), depth.max())
+            print("depth before distancing min max:", depth.min(), depth.max())
             mask = depth > max_distance
             depth[mask] = 0
+            print("depth after distancing min max:", depth.min(), depth.max())
             if is_gt:
                 depth = depth / depth.max()# in png format some data is given more precise which is larger than real depth interval
 

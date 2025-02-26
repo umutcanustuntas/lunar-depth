@@ -6,6 +6,8 @@ from PIL import Image
 import imageio.v3 as imageio
 from methods2evaluation import DepthPreprocessor
 
+import cv2
+
 def args_parser():
     parser = argparse.ArgumentParser(prog="DepthEval",
                                      description="Evaluates depth estimation results")
@@ -102,7 +104,10 @@ def main():
                 processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path, args.max_gt_distance)
                 
                 print("Processed shapes:", processed_pred.shape, processed_gt.shape)
-                
+                """
+                labeling_mask = labeling mask default position which is same shape as processed_pred
+                """
+                labeling_mask = np.full(processed_pred.shape, True, dtype=bool)
                 if args.shadow_mask:
                     # Get the base name without extension
                     base_name = os.path.splitext(pred_file)[0]
@@ -131,27 +136,44 @@ def main():
                     if not os.path.exists(labeling_path):
                         print(f"Labeling png file are not found: {labeling_path}")
                         continue
-
-
+                    
+                    OBSTACLE_COLOR = (232, 250, 80)
+                    CRATER_COLOR = (120, 0, 200)
+                    MOUNTAIN_COLOR = (173, 69, 31)
+                    GROUND_COLOR = (187, 70, 156)
 
                     # Load and apply labeling mask labeling
                     labeling_img = imageio.imread(labeling_path)
 
-                    if args.labeling.lower() == "obstacle":
-                        target_color = np.array([232, 250, 80])
-                    elif args.labeling.lower() == "crater":
-                        target_color = np.array([120, 0, 200])
-                    elif args.labeling.lower() == "mountain":
-                        target_color = np.array([173, 69, 31])
-                    elif args.labeling.lower() == "ground":
-                        target_color = np.array([187, 70, 156])
+                    print("Labeling Image Name: ", f"{base_name}.png")
 
-                    # Create binary mask where True only for exact color matches
-                    labeling_mask = np.all(labeling_img != target_color, axis=2)
+                    if args.labeling == "obstacle":
+                        target_color = OBSTACLE_COLOR
+                    elif args.labeling == "crater":
+                        target_color = CRATER_COLOR
+                    elif args.labeling == "mountain":
+                        target_color = MOUNTAIN_COLOR
+                    elif args.labeling == "ground":
+                        target_color = GROUND_COLOR
+                    else:
+                        print("Invalid labeling type")
+                        print("Please enter the correct labeling type: OBSTACLE, CRATER, MOUNTAIN, GROUND")
+                        print("Curently entered: ", args.labeling)
+                        continue
 
-                    processed_pred[labeling_mask]= 0
-                    processed_gt[labeling_mask]= 0
-            
+                    # Labeling mask for the target color
+                    labeling_mask = np.all(labeling_img == target_color, axis=-1)
+                    labeling_mask = np.invert(labeling_mask)
+             
+                    processed_pred[labeling_mask] = 0
+                    processed_gt[labeling_mask] = 0
+
+                    """
+                    cv2.imshow("Labeling Mask", processed_pred)
+                    cv2.waitKey(0)
+                    cv2.destroyAllWindows()
+                    """
+                    
                 # Pass the dataset-specific absolute_depth flag into compute_metrics.
                 result = compute_metrics(
                     gt=processed_gt, 

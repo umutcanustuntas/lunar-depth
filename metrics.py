@@ -7,7 +7,7 @@ def compute_metrics(gt, pred):
     
     valid_mask = np.greater(gt, 0)
     print(valid_mask.sum(), "\n\n")
-    min_valid_pixels = gt.shape[0] * gt.shape[1] * 0.0000000000000000000001
+    min_valid_pixels = gt.shape[0] * gt.shape[1] * 0.1
     if valid_mask.sum() < min_valid_pixels:
         print("Warning: Too few valid pixels for reliable metrics")
         return None
@@ -40,7 +40,7 @@ def compute_metrics(gt, pred):
     si_log = np.mean(log_diff**2) - np.mean(log_diff)**2
     
     f_a = np.mean(np.abs(gt_valid - pred_valid) < 0.5)
-    """
+    
     print(f"Abs Rel: {abs_rel}")
     print(f"Sq Rel: {sq_rel}")
     print(f"RMSE: {rmse}")
@@ -51,7 +51,7 @@ def compute_metrics(gt, pred):
     print(f"δ3: {delta3}")
     print(f"SI_log: {si_log}")
     print(f"F_A: {f_a}")  
-    """
+    
     return {
         "Abs Rel": abs_rel,
         "Sq Rel": sq_rel,
