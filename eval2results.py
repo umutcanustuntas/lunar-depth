@@ -117,11 +117,11 @@ def main():
                     # Load and apply shadow mask
                     shadow_img = Image.open(shadow_path)
                     shadow = np.array(shadow_img).astype(np.float32)
-                    shadow_mask = shadow > 0  # Binary mask where shadow pixels are True
+                    shadow_mask = (shadow == 0)  # Binary mask where shadow pixels are True
 
                     # Instead of indexing, use multiplication to preserve dimensions
-                    processed_pred = processed_pred * shadow_mask
-                    processed_gt = processed_gt * shadow_mask
+                    processed_pred[shadow_mask] = 0
+                    processed_gt[shadow_mask] = 0
 
                 # Labeling Mask for Obstacle, Crater, Mountain
                 if args.labeling: 
@@ -183,6 +183,28 @@ def main():
                 processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path, args.max_gt_distance)
                 
                 print("Processed shapes:", processed_pred.shape, processed_gt.shape)
+                
+                if args.shadow_mask:
+                    # Get the base name without extension
+                    base_name = os.path.splitext(pred_file)[0]
+                    shadow_path = os.path.join(args.shadow_mask, f"cleaned_{base_name}_5.png")
+
+                    if not os.path.exists(shadow_path):
+                        #print(f"Shadow mask not found: {shadow_path}")
+                        continue
+
+                    #print(f"Using shadow mask: {shadow_path}")
+
+                    # Load and apply shadow mask
+                    shadow_img = Image.open(shadow_path)
+                    shadow = np.array(shadow_img).astype(np.float32)
+                    shadow_mask = (shadow == 0)  # Binary mask where shadow pixels are True
+
+                    # Instead of indexing, use multiplication to preserve dimensions
+                    processed_pred[shadow_mask] = 0
+                    processed_gt[shadow_mask] = 0
+            
+            
                 # Pass the dataset-specific absolute_depth flag into compute_metrics.
                 result = compute_metrics(
                     gt=processed_gt, 
