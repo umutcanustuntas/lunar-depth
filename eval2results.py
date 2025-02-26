@@ -106,7 +106,7 @@ def main():
                 if args.shadow_mask:
                     # Get the base name without extension
                     base_name = os.path.splitext(pred_file)[0]
-                    shadow_path = os.path.join(args.shadow_mask, f"cleaned_{base_name}_3.png")
+                    shadow_path = os.path.join(args.shadow_mask, f"cleaned_{base_name}_5.png")
 
                     if not os.path.exists(shadow_path):
                         #print(f"Shadow mask not found: {shadow_path}")
