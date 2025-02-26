@@ -7,7 +7,7 @@ def compute_metrics(gt, pred):
     
     valid_mask = np.greater(gt, 0)
     print(valid_mask.sum(), "\n\n")
-    min_valid_pixels = gt.shape[0] * gt.shape[1] * 0.1
+    min_valid_pixels = gt.shape[0] * gt.shape[1] * 0.001
     if valid_mask.sum() < min_valid_pixels:
         print("Warning: Too few valid pixels for reliable metrics")
         return None
