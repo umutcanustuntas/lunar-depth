@@ -266,9 +266,9 @@ def main():
                     processed_pred[labeling_mask] = 0
                     processed_gt[labeling_mask] = 0
 
-                    cv2.imshow("Labeling Mask", processed_pred)
+                    """cv2.imshow("Labeling Mask", processed_pred)
                     cv2.waitKey(0)
-                    cv2.destroyAllWindows()
+                    cv2.destroyAllWindows()"""
                     
                 # Pass the dataset-specific absolute_depth flag into compute_metrics.
                 result = compute_metrics(
