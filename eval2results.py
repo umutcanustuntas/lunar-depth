@@ -195,6 +195,7 @@ def main():
 
             input("Press Enter to continue...")
     else:
+        count = 0
         for pred_file, gt_file in zip(pred_depth_files, gt_depth_files):
 
                 pred_path = os.path.join(args.preds_folder, pred_file)
@@ -226,7 +227,49 @@ def main():
                     processed_pred[shadow_mask] = 0
                     processed_gt[shadow_mask] = 0
             
-            
+                if args.labeling: 
+                    base_name = os.path.splitext(pred_file)[0]
+                    labeling_path = os.path.join(args.labeling_path, f"{base_name}.png")
+
+                    if not os.path.exists(labeling_path):
+                        print(f"Labeling png file are not found: {labeling_path}")
+                        continue
+                    
+                    OBSTACLE_COLOR = (232, 250, 80)
+                    CRATER_COLOR = (120, 0, 200)
+                    MOUNTAIN_COLOR = (173, 69, 31)
+                    GROUND_COLOR = (187, 70, 156)
+
+                    # Load and apply labeling mask labeling
+                    labeling_img = imageio.imread(labeling_path)
+
+                    print("Labeling Image Name: ", f"{base_name}.png")
+
+                    if args.labeling == "obstacle":
+                        target_color = OBSTACLE_COLOR
+                    elif args.labeling == "crater":
+                        target_color = CRATER_COLOR
+                    elif args.labeling == "mountain":
+                        target_color = MOUNTAIN_COLOR
+                    elif args.labeling == "ground":
+                        target_color = GROUND_COLOR
+                    else:
+                        print("Invalid labeling type")
+                        print("Please enter the correct labeling type: OBSTACLE, CRATER, MOUNTAIN, GROUND")
+                        print("Curently entered: ", args.labeling)
+                        continue
+
+                    # Labeling mask for the target color
+                    labeling_mask = np.all(labeling_img == target_color, axis=-1)
+                    labeling_mask = np.invert(labeling_mask)
+             
+                    processed_pred[labeling_mask] = 0
+                    processed_gt[labeling_mask] = 0
+
+                    cv2.imshow("Labeling Mask", processed_pred)
+                    cv2.waitKey(0)
+                    cv2.destroyAllWindows()
+                    
                 # Pass the dataset-specific absolute_depth flag into compute_metrics.
                 result = compute_metrics(
                     gt=processed_gt, 
@@ -235,13 +278,15 @@ def main():
 
                 if result is None:
                     continue
+                count += 1
                 for metric in metrics_keys:
                     total[metric] += result[metric]
 
 
     print("\nTotal results:")
     for metric in metrics_keys:
-        print(metric,": ", total[metric]/ len(pred_depth_files))
+        print(metric,": ", total[metric]/ count)
+    print("Considered Files: ", count, "out of", len(pred_depth_files))
 
 
 if __name__ == '__main__':
