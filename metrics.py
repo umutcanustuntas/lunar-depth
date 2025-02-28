@@ -1,5 +1,6 @@
 import numpy as np
 from alignment import align_depth_least_square
+import matplotlib.pyplot as plt
 
 def compute_metrics(gt, pred):
     if gt.shape != pred.shape:
@@ -40,6 +41,23 @@ def compute_metrics(gt, pred):
     si_log = np.mean(log_diff**2) - np.mean(log_diff)**2
     
     f_a = np.mean(np.abs(gt_valid - pred_valid) < 0.5)
+
+
+    log_diff2 = np.log(pred) - np.log(gt)
+    valid_mask = 1-valid_mask
+    valid_mask = valid_mask*(-1)
+
+    """
+    gt[valid_mask] = 0
+    pred[valid_mask] = 0
+                                     
+    plt.figure(figsize=(8, 6))
+    plt.imshow(log_diff2, cmap='coolwarm', aspect='auto')  # 'coolwarm' for temperature-like effect
+    plt.colorbar(label="Log Difference")
+    plt.title("Log Difference Temperature Map")
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
+    plt.show()"""
     
     print(f"Abs Rel: {abs_rel}")
     print(f"Sq Rel: {sq_rel}")
