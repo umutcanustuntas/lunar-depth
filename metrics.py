@@ -47,17 +47,40 @@ def compute_metrics(gt, pred):
     valid_mask = 1-valid_mask
     valid_mask = valid_mask*(-1)
 
-    """
+    """ 
     gt[valid_mask] = 0
     pred[valid_mask] = 0
-                                     
+                          
     plt.figure(figsize=(8, 6))
     plt.imshow(log_diff2, cmap='coolwarm', aspect='auto')  # 'coolwarm' for temperature-like effect
     plt.colorbar(label="Log Difference")
     plt.title("Log Difference Temperature Map")
     plt.xlabel("X-axis")
     plt.ylabel("Y-axis")
-    plt.show()"""
+    plt.waitforbuttonpress()
+    plt.show()
+
+
+    abs_rel2 = np.abs(gt - pred) / gt
+
+    plt.figure(figsize=(8, 6))
+    plt.imshow(pred, cmap='coolwarm', aspect='auto')  # 'coolwarm' for temperature-like effect
+    plt.colorbar(label="Pred")
+    plt.title("Pred Temperature Map")
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
+    plt.waitforbuttonpress()
+    plt.show()
+    
+    plt.figure(figsize=(8, 6))
+    plt.imshow(abs_rel2, cmap='coolwarm', aspect='auto')  # 'coolwarm' for temperature-like effect
+    plt.colorbar(label="Abs Rel")
+    plt.title("Abs Rel Temperature Map")
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
+    plt.waitforbuttonpress()
+    plt.show()
+    """
     
     print(f"Abs Rel: {abs_rel}")
     print(f"Sq Rel: {sq_rel}")

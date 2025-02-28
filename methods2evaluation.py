@@ -169,6 +169,8 @@ class DepthPreprocessor:
         #print("gt min max ", gt.min(), gt.max())
         #print("pred min max ", pred.min(), pred.max())
         # Clip to min and max depth values
+        
+        
         pred = np.clip(pred, a_min=self.min_depth, a_max=self.max_depth)
         pred = np.clip(pred, a_min=1e-6, a_max=None)
         
