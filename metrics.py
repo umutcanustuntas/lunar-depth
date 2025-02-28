@@ -59,59 +59,70 @@ def compute_metrics(gt, pred):
     plt.ylabel("Y-axis")
     plt.waitforbuttonpress()
     plt.show()
-    
+    """
     
 
     vmin = 0  # Lower bound
     vmax = 1 # Upper bound
     norm = Normalize(vmin=vmin, vmax=vmax)
 
-    abs_rel2 = np.abs(gt - pred) / gt
-
+    mask = gt == gt.min(),
+    gt[mask] = None
     # Plot Prediction Temperature Map
+
     plt.figure(figsize=(8, 6))
-    plt.imshow(gt,cmap='gray', aspect='auto', norm=norm)
+    plt.imshow(gt,cmap='plasma', aspect='auto')
     plt.colorbar(label="GT")
     plt.title("GT Temperature Map")
     plt.xlabel("X-axis")
     plt.ylabel("Y-axis")
-    plt.waitforbuttonpress()
-    plt.show()
+    plt.imsave("GT.svg", gt)
+    plt.close()
 
-    # Plot Prediction Temperature Map
-    plt.figure(figsize=(8, 6))
-    plt.imshow(pred, cmap='seismic', aspect='auto', norm=norm)
-    plt.colorbar(label="Pred")
-    plt.title("Pred Temperature Map")
-    plt.xlabel("X-axis")
-    plt.ylabel("Y-axis")
-    plt.waitforbuttonpress()
-    plt.show()
 
-    vmin = 0  # Lower bound
-    vmax = 1  # Upper bound
 
-    temp_max = -1000
 
+
+    
+
+
+    abs_rel2 = np.abs(gt - pred) / gt
+
+    """
     for i in range(0, abs_rel2.shape[0]):
         for j in range(0, abs_rel2.shape[1]):
             if abs_rel2[i][j] > temp_max and abs_rel2[i][j] < 10:
                 temp_max = abs_rel2[i][j]
     print("TEMP MAX: ", temp_max)
-    abs_rel2 = abs_rel2 / temp_max
+    abs_rel2 = abs_rel2 / temp_max  """
     
-
-    norm = Normalize(vmin=vmin, vmax=vmax)
-
+    
     plt.figure(figsize=(8, 6))
-    plt.imshow(abs_rel2, cmap='coolwarm', aspect='auto' )  # 'coolwarm' for temperature-like effect
+    plt.imshow(abs_rel2, cmap='coolwarm', aspect='auto')  # 'coolwarm' for temperature-like effect
     plt.colorbar(label="Abs Rel")
-    plt.title("Abs Rel3 Temperature Map")
+    plt.title("Abs Rel Temperature Map")
     plt.xlabel("X-axis")
     plt.ylabel("Y-axis")
-    plt.waitforbuttonpress()
-    plt.show()
-    """
+    plt.imsave("AbsRel.svg", abs_rel2)
+    plt.close()
+
+
+    mask2 = pred == pred.max(),
+    pred[mask2] = 0
+
+    mask = pred == pred.min(),
+    pred[mask] = None
+
+    # Plot Prediction Temperature Map
+    plt.figure(figsize=(8, 6))
+    plt.imshow(pred, cmap='plasma', aspect='auto')
+    plt.colorbar(label="Pred")
+    plt.title("Pred Temperature Map")
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
+    plt.imsave("Pred.svg", pred)
+    plt.close()
+
     print(f"Abs Rel: {abs_rel}")
     print(f"Sq Rel: {sq_rel}")
     print(f"RMSE: {rmse}")
