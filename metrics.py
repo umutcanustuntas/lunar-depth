@@ -1,6 +1,7 @@
 import numpy as np
 from alignment import align_depth_least_square
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
 
 def compute_metrics(gt, pred):
     if gt.shape != pred.shape:
@@ -41,16 +42,15 @@ def compute_metrics(gt, pred):
     si_log = np.mean(log_diff**2) - np.mean(log_diff)**2
     
     f_a = np.mean(np.abs(gt_valid - pred_valid) < 0.5)
-
-
+    """
     log_diff2 = np.log(pred) - np.log(gt)
     valid_mask = 1-valid_mask
     valid_mask = valid_mask*(-1)
 
-    """ 
     gt[valid_mask] = 0
     pred[valid_mask] = 0
-                          
+    
+    
     plt.figure(figsize=(8, 6))
     plt.imshow(log_diff2, cmap='coolwarm', aspect='auto')  # 'coolwarm' for temperature-like effect
     plt.colorbar(label="Log Difference")
@@ -59,29 +59,59 @@ def compute_metrics(gt, pred):
     plt.ylabel("Y-axis")
     plt.waitforbuttonpress()
     plt.show()
+    
+    
 
+    vmin = 0  # Lower bound
+    vmax = 1 # Upper bound
+    norm = Normalize(vmin=vmin, vmax=vmax)
 
     abs_rel2 = np.abs(gt - pred) / gt
 
+    # Plot Prediction Temperature Map
     plt.figure(figsize=(8, 6))
-    plt.imshow(pred, cmap='coolwarm', aspect='auto')  # 'coolwarm' for temperature-like effect
+    plt.imshow(gt,cmap='gray', aspect='auto', norm=norm)
+    plt.colorbar(label="GT")
+    plt.title("GT Temperature Map")
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
+    plt.waitforbuttonpress()
+    plt.show()
+
+    # Plot Prediction Temperature Map
+    plt.figure(figsize=(8, 6))
+    plt.imshow(pred, cmap='seismic', aspect='auto', norm=norm)
     plt.colorbar(label="Pred")
     plt.title("Pred Temperature Map")
     plt.xlabel("X-axis")
     plt.ylabel("Y-axis")
     plt.waitforbuttonpress()
     plt.show()
+
+    vmin = 0  # Lower bound
+    vmax = 1  # Upper bound
+
+    temp_max = -1000
+
+    for i in range(0, abs_rel2.shape[0]):
+        for j in range(0, abs_rel2.shape[1]):
+            if abs_rel2[i][j] > temp_max and abs_rel2[i][j] < 10:
+                temp_max = abs_rel2[i][j]
+    print("TEMP MAX: ", temp_max)
+    abs_rel2 = abs_rel2 / temp_max
     
+
+    norm = Normalize(vmin=vmin, vmax=vmax)
+
     plt.figure(figsize=(8, 6))
-    plt.imshow(abs_rel2, cmap='coolwarm', aspect='auto')  # 'coolwarm' for temperature-like effect
+    plt.imshow(abs_rel2, cmap='coolwarm', aspect='auto' )  # 'coolwarm' for temperature-like effect
     plt.colorbar(label="Abs Rel")
-    plt.title("Abs Rel Temperature Map")
+    plt.title("Abs Rel3 Temperature Map")
     plt.xlabel("X-axis")
     plt.ylabel("Y-axis")
     plt.waitforbuttonpress()
     plt.show()
     """
-    
     print(f"Abs Rel: {abs_rel}")
     print(f"Sq Rel: {sq_rel}")
     print(f"RMSE: {rmse}")
