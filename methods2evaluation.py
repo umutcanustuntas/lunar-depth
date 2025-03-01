@@ -37,7 +37,9 @@ class DepthPreprocessor:
 
         # Load crop parameters
         self.crop_params = self.config_info.get('crop_params', {})
-        
+
+        self.bounded_gt = None
+
     def load_pfm(self, file_path):
         with open(file_path, 'rb') as f:
             header = f.readline().decode('utf-8').rstrip()
@@ -84,6 +86,13 @@ class DepthPreprocessor:
             mask = depth > max_distance
             depth[mask] = 0
             print("depth after distancing min max:", depth.min(), depth.max())
+
+
+            print("FOOOR 0-30 vesaire HESAPLAMA için sinir belirleme BURADAAAAA FLAG'i TRUE YAAAAAPPP ") 
+            if False:
+                dist_mask = depth < 30 #!!!!!!!!!!!!!!!!!!!!
+                self.bounded_gt = dist_mask
+            
             if is_gt:
                 depth = depth / depth.max()# in png format some data is given more precise which is larger than real depth interval
 
@@ -175,5 +184,8 @@ class DepthPreprocessor:
         pred = np.clip(pred, a_min=1e-6, a_max=None)
         
 
-        return pred, gt
+        if self.bounded_gt is not None:
+            return pred, gt * self.bounded_gt
+        else:
+            return pred, gt
     
