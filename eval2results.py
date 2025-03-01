@@ -206,7 +206,10 @@ def main():
                 processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path, args.max_gt_distance)
                 
                 print("Processed shapes:", processed_pred.shape, processed_gt.shape)
-                
+                print("AAAAAAAAAAAaBBBBBB:", np.min(processed_gt), np.max(processed_gt))
+
+
+            
                 if args.shadow_mask:
                     # Get the base name without extension
                     base_name = os.path.splitext(pred_file)[0]
