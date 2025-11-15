@@ -1,295 +1,76 @@
 import os
 import argparse
 import numpy as np
-from metrics import compute_metrics
-from PIL import Image
-import imageio.v3 as imageio
-from methods2evaluation import DepthPreprocessor
 
-import cv2
+from metrics import compute_metrics_parallel
+from methods2evaluation import OptimizedDepthPreprocessor
+
 
 def args_parser():
-    parser = argparse.ArgumentParser(prog="DepthEval",
-                                     description="Evaluates depth estimation results")
+    parser = argparse.ArgumentParser(description="Depth evaluation")
     parser.add_argument("gt_folder")
     parser.add_argument("preds_folder")
     parser.add_argument("--config_info", type=str, default="config_info")
-    parser.add_argument("--disparity", action="store_true")
     parser.add_argument("--absolute_depth", action="store_true")
-
-
-    parser.add_argument("--scale", action="store_true")
     parser.add_argument("--relative_depth", action="store_true")
+    parser.add_argument("--disparity", action="store_true")
     parser.add_argument("--resize", action="store_true")
     parser.add_argument("--max_gt_distance", type=int, default=100)
-    parser.add_argument("--per_scene", action="store_true")
-
-    #Arguments for masking and labeling
-    parser.add_argument("--shadow_mask", type=str, help="Path to shadow mask directory")
-    parser.add_argument("--labeling", type=str, help="Type of labeling to apply (e.g., OBSTACLE, CRATER, MOUNTAIN, GROUND)" ) #OBSTACLE, CRATER, MOUNTAIN, GROUND
-    parser.add_argument("--labeling_path", type=str, help="Directory containing the label png files for evaluation" ) #Please enter the path of the label png files
+    parser.add_argument("--num_workers", type=int, default=4)
     
-
+    # Shadow mask and labeling features
+    parser.add_argument("--shadow_mask", type=str, help="Path to shadow mask directory (png format), file names must be correlated with pred and gt file names")
+    parser.add_argument("--labeling", type=str, help="Type of labeling to apply (e.g., obstacle, crater, mountain, ground)")
+    parser.add_argument("--labeling_path", type=str, help="Directory containing the label png files for evaluation")
+    
+    # Distance range filtering
+    parser.add_argument("--distance_range", type=str, 
+                       help="Distance range for evaluation (e.g., '30-60' for 30-60 meters, '100' for 0-100 meters).")
+    
     return parser.parse_args()
-
 
 
 def main():
     args = args_parser()
-    preprocessor = DepthPreprocessor(config_info = args.config_info,
-                                     args=args)
-
-    total = {
-        "Abs Rel": 0.0,
-        "Sq Rel": 0.0,
-        "RMSE": 0.0,
-        "RMSE Log": 0.0,
-        "Log10": 0.0,
-        "δ1": 0.0,
-        "δ2": 0.0,
-        "δ3": 0.0,
-        "SI_log": 0.0,
-        "F_A": 0.0
-    }
-    metrics_keys = total.keys()
     
-
-    scenes = ["moon1", "moon2", "moon3", "moon4", "moon5", "moon6", "moon7", "moon8", "moon9"]
+    # Initialize preprocessor
+    preprocessor = OptimizedDepthPreprocessor(config_info=args.config_info, args=args)
     
-    gt_depth_files = sorted(os.listdir(args.gt_folder))
-    pred_depth_files = sorted(os.listdir(args.preds_folder))
-
-    gt_lists =[]
+    # Get file lists
+    gt_files = sorted(os.listdir(args.gt_folder))
+    pred_files = sorted(os.listdir(args.preds_folder))
     
-    if args.per_scene:
-        for i in scenes:
-            temp = []
-            for j in gt_depth_files:
-                if i in j:
-                    temp.append(j)
-            gt_lists.append(temp)
-
-
-        pred_lists =[]
-
-        for i in scenes:
-            temp = []
-            for j in pred_depth_files:
-                if i in j:
-                    temp.append(j)
-            pred_lists.append(temp)
-
-        
-        for pred_files, gt_files in zip(pred_lists, gt_lists):
-
-            temp = {
-                "Abs Rel": 0.0,
-                "Sq Rel": 0.0,
-                "RMSE": 0.0,
-                "RMSE Log": 0.0,
-                "Log10": 0.0,
-                "δ1": 0.0,
-                "δ2": 0.0,
-                "δ3": 0.0,
-                "SI_log": 0.0,
-                "F_A": 0.0
-            }
-            for pred_file, gt_file in zip(pred_files, gt_files):
-
-                pred_path = os.path.join(args.preds_folder, pred_file)
-                gt_path = os.path.join(args.gt_folder, gt_file)
-                
-                print(f"\nEvaluating {pred_file}:")
-                print(f"GT: {gt_path}")
-                processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path, args.max_gt_distance)
-                
-                print("Processed shapes:", processed_pred.shape, processed_gt.shape)
-                """
-                labeling_mask = labeling mask default position which is same shape as processed_pred
-                """
-                labeling_mask = np.full(processed_pred.shape, True, dtype=bool)
-                if args.shadow_mask:
-                    # Get the base name without extension
-                    base_name = os.path.splitext(pred_file)[0]
-                    shadow_path = os.path.join(args.shadow_mask, f"cleaned_{base_name}_5.png")
-
-                    if not os.path.exists(shadow_path):
-                        #print(f"Shadow mask not found: {shadow_path}")
-                        continue
-
-                    #print(f"Using shadow mask: {shadow_path}")
-
-                    # Load and apply shadow mask
-                    shadow_img = Image.open(shadow_path)
-                    shadow = np.array(shadow_img).astype(np.float32)
-                    shadow_mask = (shadow == 0)  # Binary mask where shadow pixels are True
-
-                    # Instead of indexing, use multiplication to preserve dimensions
-                    processed_pred[shadow_mask] = 0
-                    processed_gt[shadow_mask] = 0
-
-                # Labeling Mask for Obstacle, Crater, Mountain
-                if args.labeling: 
-                    base_name = os.path.splitext(pred_file)[0]
-                    labeling_path = os.path.join(args.labeling_path, f"{base_name}.png")
-
-                    if not os.path.exists(labeling_path):
-                        print(f"Labeling png file are not found: {labeling_path}")
-                        continue
-                    
-                    OBSTACLE_COLOR = (232, 250, 80)
-                    CRATER_COLOR = (120, 0, 200)
-                    MOUNTAIN_COLOR = (173, 69, 31)
-                    GROUND_COLOR = (187, 70, 156)
-
-                    # Load and apply labeling mask labeling
-                    labeling_img = imageio.imread(labeling_path)
-
-                    print("Labeling Image Name: ", f"{base_name}.png")
-
-                    if args.labeling == "obstacle":
-                        target_color = OBSTACLE_COLOR
-                    elif args.labeling == "crater":
-                        target_color = CRATER_COLOR
-                    elif args.labeling == "mountain":
-                        target_color = MOUNTAIN_COLOR
-                    elif args.labeling == "ground":
-                        target_color = GROUND_COLOR
-                    else:
-                        print("Invalid labeling type")
-                        print("Please enter the correct labeling type: OBSTACLE, CRATER, MOUNTAIN, GROUND")
-                        print("Curently entered: ", args.labeling)
-                        continue
-
-                    # Labeling mask for the target color
-                    labeling_mask = np.all(labeling_img == target_color, axis=-1)
-                    labeling_mask = np.invert(labeling_mask)
-             
-                    processed_pred[labeling_mask] = 0
-                    processed_gt[labeling_mask] = 0
-
-                    """
-                    cv2.imshow("Labeling Mask", processed_pred)
-                    cv2.waitKey(0)
-                    cv2.destroyAllWindows()
-                    """
-                    
-                # Pass the dataset-specific absolute_depth flag into compute_metrics.
-                result = compute_metrics(
-                    gt=processed_gt, 
-                    pred=processed_pred,
-                )
-
-                if result is None:
-                    continue
-                
-                for metric in metrics_keys:
-                    temp[metric] += result[metric]
-                    total[metric] += result[metric]
-            
-            print("\nResults of", pred_files[0].split("_")[0])
-            for metric in metrics_keys:
-                temp[metric] /= len(pred_files)
-                print(f"{metric}: {temp[metric]:.4f}")
-            print("\n")
-
-            input("Press Enter to continue...")
-    else:
-        count = 0
-        for pred_file, gt_file in zip(pred_depth_files, gt_depth_files):
-
-                pred_path = os.path.join(args.preds_folder, pred_file)
-                gt_path = os.path.join(args.gt_folder, gt_file)
-                
-                print(f"\nEvaluating {pred_file}:")
-                print(f"GT: {gt_path}")
-                processed_pred, processed_gt = preprocessor.process_depth(pred_path, gt_path, args.max_gt_distance)
-                
-                print("Processed shapes:", processed_pred.shape, processed_gt.shape)
-                print("AAAAAAAAAAAaBBBBBB:", np.min(processed_gt), np.max(processed_gt))
-
-
-            
-                if args.shadow_mask:
-                    # Get the base name without extension
-                    base_name = os.path.splitext(pred_file)[0]
-                    shadow_path = os.path.join(args.shadow_mask, f"cleaned_{base_name}_5.png")
-
-                    if not os.path.exists(shadow_path):
-                        #print(f"Shadow mask not found: {shadow_path}")
-                        continue
-
-                    #print(f"Using shadow mask: {shadow_path}")
-
-                    # Load and apply shadow mask
-                    shadow_img = Image.open(shadow_path)
-                    shadow = np.array(shadow_img).astype(np.float32)
-                    shadow_mask = (shadow == 0)  # Binary mask where shadow pixels are True
-
-                    # Instead of indexing, use multiplication to preserve dimensions
-                    processed_pred[shadow_mask] = 0
-                    processed_gt[shadow_mask] = 0
-            
-                if args.labeling: 
-                    base_name = os.path.splitext(pred_file)[0]
-                    labeling_path = os.path.join(args.labeling_path, f"{base_name}.png")
-
-                    if not os.path.exists(labeling_path):
-                        print(f"Labeling png file are not found: {labeling_path}")
-                        continue
-                    
-                    OBSTACLE_COLOR = (232, 250, 80)
-                    CRATER_COLOR = (120, 0, 200)
-                    MOUNTAIN_COLOR = (173, 69, 31)
-                    GROUND_COLOR = (187, 70, 156)
-
-                    # Load and apply labeling mask labeling
-                    labeling_img = imageio.imread(labeling_path)
-
-                    print("Labeling Image Name: ", f"{base_name}.png")
-
-                    if args.labeling == "obstacle":
-                        target_color = OBSTACLE_COLOR
-                    elif args.labeling == "crater":
-                        target_color = CRATER_COLOR
-                    elif args.labeling == "mountain":
-                        target_color = MOUNTAIN_COLOR
-                    elif args.labeling == "ground":
-                        target_color = GROUND_COLOR
-                    else:
-                        print("Invalid labeling type")
-                        print("Please enter the correct labeling type: OBSTACLE, CRATER, MOUNTAIN, GROUND")
-                        print("Curently entered: ", args.labeling)
-                        continue
-
-                    # Labeling mask for the target color
-                    labeling_mask = np.all(labeling_img == target_color, axis=-1)
-                    labeling_mask = np.invert(labeling_mask)
-             
-                    processed_pred[labeling_mask] = 0
-                    processed_gt[labeling_mask] = 0
-
-                    """cv2.imshow("Labeling Mask", processed_pred)
-                    cv2.waitKey(0)
-                    cv2.destroyAllWindows()"""
-                    
-                # Pass the dataset-specific absolute_depth flag into compute_metrics.
-                result = compute_metrics(
-                    gt=processed_gt, 
-                    pred=processed_pred,
-                )
-
-                if result is None:
-                    continue
-                count += 1
-                for metric in metrics_keys:
-                    total[metric] += result[metric]
-
-
-    print("\nTotal results:")
-    for metric in metrics_keys:
-        print(metric,": ", total[metric]/ count)
-    print("Considered Files: ", count, "out of", len(pred_depth_files))
+    pred_paths = [os.path.join(args.preds_folder, f) for f in pred_files]
+    gt_paths = [os.path.join(args.gt_folder, f) for f in gt_files]
+    
+    print(f"Processing {len(pred_paths)} image pairs with {args.num_workers} workers...")
+    
+    # Print masking information
+    if args.shadow_mask:
+        print(f"Using shadow mask from: {args.shadow_mask}")
+    if args.labeling and args.labeling_path:
+        print(f"Using labeling: {args.labeling} from: {args.labeling_path}")
+    if args.distance_range:
+        print(f"Using distance range: {args.distance_range}")
+    
+    # Parallel computation
+    results, count = compute_metrics_parallel(
+        pred_paths, gt_paths, preprocessor, 
+        max_distance=args.max_gt_distance, 
+        num_workers=args.num_workers,
+        shadow_mask_dir=args.shadow_mask,
+        labeling_type=args.labeling,
+        labeling_path=args.labeling_path
+    )
+    
+    if results is None:
+        print("No valid results!")
+        return
+    
+    # Print results
+    print(f"\nResults ({count} valid files):")
+    for metric_name, value in results.items():
+        print(f"{metric_name}: {value:.4f}")
 
 
 if __name__ == '__main__':
