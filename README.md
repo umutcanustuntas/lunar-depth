@@ -1,109 +1,129 @@
-# Lunar Depth Estimation Evaluation
+# Lunar Depth: A Framework for Monocular Depth Estimation
+
+**Evaluating State-of-the-Art Monocular Depth Estimation for Lunar Rover Navigation.**
+
+<p align="center">
+  <a href="#multimedia">Multimedia</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#citation">Paper</a> •
+  <a href="https://github.com/your-username/LunarMDE/issues">Contact Us</a>
+</p>
+
+<p align="center">
+  <a href="https://arxiv.org/abs/your-paper-id"><img src="https://img.shields.io/badge/paper-coming%20soon-red.svg" alt="Paper-Link-Coming-Soon"></a>
+  &nbsp;&nbsp;
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+</p>
+
+This repository contains the official implementation of [Analysis of Monocular Depth Estimation for Lunar
+Vehicles](https://arxiv.org/abs/your-paper-id), which systematically evaluates the performance of state-of-the-art Monocular Depth Estimation (MDE) networks for lunar rover missions. 
+We provide a comprehensive framework for evaluating MDE models on both real-world data from the **Chang'e-3 mission** and simulation data from the
+[**LunarSim**](https://github.com/PUTvision/LunarSim) and  [**LuSNAR**](https://github.com/zqyu9/LuSNAR-dataset) datasets.  
 
 
-## Option with Parallel Processing
+---
 
-Fast evaluation with multiprocessing:
+## Multimedia
 
-```bash
-# Parallel Processing (4 workers)
-python optimized_eval2results.py ground_truth/ predictions/ \
-    --config_info config_info \
-    --absolute_depth \
-    --max_gt_distance 100 \
-    --num_workers 4
+<!-- Placeholder for a compelling GIF or image showing the system in action. 
+     For example, a side-by-side of a rover camera view and the generated depth map. -->
+<p align="center">
+  <img src="path/to/your/awesome_promo.gif" alt="Lunar MDE in Action" width="80%"/>
+</p>
 
-# Evaluation with shadow mask
-python optimized_eval2results.py ground_truth/ predictions/ \
-    --config_info config_info \
-    --absolute_depth \
-    --num_workers 4 \
-    --shadow_mask path/to/shadow/masks/
-
-# Evaluation with labeling mask
-python optimized_eval2results.py ground_truth/ predictions/ \
-    --config_info config_info \
-    --absolute_depth \
-    --num_workers 4 \
-    --labeling obstacle \
-    --labeling_path path/to/labeling/masks/
-
-# With both shadow and labeling masks
-python optimized_eval2results.py ground_truth/ predictions/ \
-    --config_info config_info \
-    --absolute_depth \
-    --num_workers 4 \
-    --shadow_mask path/to/shadow/masks/ \
-    --labeling crater \
-    --labeling_path path/to/labeling/masks/
-
-# Evaluate only 30-60 meter range (works with any file type) => For relative ground-truth please consider the interval itself is between 0 and 1 (LunarSim)
-python optimized_eval2results.py ground_truth/ predictions/ \
-    --config_info config_info \
-    --absolute_depth \
-    --distance_range "30-60" \
-    --num_workers 4
-
-# Evaluate only 0-100 meter range
-python optimized_eval2results.py ground_truth/ predictions/ \
-    --config_info config_info \
-    --absolute_depth \
-    --distance_range "100" \
-    --num_workers 4
-
-# Complete evaluation with all features
-python optimized_eval2results.py ground_truth/ predictions/ \
-    --config_info config_info \
-    --absolute_depth \
-    --resize \
-    --max_gt_distance 100 \
-    --num_workers 8 \
-    --distance_range "30-60" \
-    --shadow_mask path/to/shadow/masks/ \
-    --labeling obstacle \
-    --labeling_path path/to/labeling/masks/
-```
+---
 
 
+## Key Features
 
-### 1. Masking Types
-- **Shadow Mask**: Filters shadow regions
-- **Labeling Types**: 
-  - `obstacle`: Obstacle regions
-  - `crater`: Crater regions  
-  - `mountain`: Mountain regions
-  - `ground`: Ground regions
+*   **Comprehensive Evaluation Suite:** A flexible, evaluation suite (in the `eval` folder) to compute a wide range of depth estimation metrics.
+*   **Targeted Analysis:** Built-in support for performance evaluation on specific lunar features like **obstacles, craters, mountains, ground,** and **shadowed regions**.
+*   **Real & Simulated Data Support:** Tools and scripts for evaluating on simulated datasets (e.g., LunarSim) and real-world data.
+*   **Chang'e-3 Tools:** Includes scripts for generating ground truth and evaluating MDE inferences on data from the Chang'e-3 mission.
+*   **High Performance:** Optimized with parallel processing to rapidly evaluate large datasets.
 
-### 2. Parallel Processing 
-- `num_workers > 1`: Parallel processing (fast)
-- `num_workers = 1`: Sequential processing (low memory)
-- Each image pair is processed in separate worker
+## Installation
 
+We recommend using `conda` to create a clean and isolated environment.
 
-### 3. Usage Notes
-- Shadow mask files: Should be in `cleaned_{filename}_5.png` format
-- Labeling files: Should be in `{filename}.png` format  
-- `num_workers = 4-8` is generally optimal
-- Memory usage increases with worker count
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/LunarMDE.git
+    cd LunarMDE
+    ```
 
+2.  **Create and activate a Conda environment:**
+    ```bash
+    conda create -n lunarmde python=3.9 -y
+    conda activate lunarmde
+    ```
 
-## Files Description
+3.  **Install the required packages:**
+    The dependencies are listed in the `requirements.txt` file.
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-### Files:
-- `optimized_eval2results.py`: **Main optimized evaluation script with parallel processing**
-- `optimized_methods2evaluation.py`: Optimized depth preprocessing with numpy vectorization
-- `optimized_metrics.py`: Parallel metrics computation with masking support
+<!-- ## How to Run
 
-### Configuration:
-- `config_info.yaml`: Evaluation configuration parameters
+This repository provides a powerful evaluation script to test MDE model predictions against ground truth data. The main script is `eval2results.py`.
 
-## Installation Requirements
+### Alignment and Scaling Options
 
-```bash
-#Create a new conda environment
-conda create -n myenv python=3.9
-conda activate myenv
+You must choose one of the following evaluation strategies:
 
-#Install requirements
-pip install -r Requirements.txt
+*   `--absolute_depth`: For models that predict metric depth. Applies median scaling to align the prediction with the ground truth.
+*   `--relative_depth`: For models that predict relative depth. Aligns the prediction to the ground truth using a least-squares fit for scale and shift.
+*   `--disparity`: Use with `--relative_depth` if your model predicts disparity. Alignment is performed in disparity space before converting to depth.
+
+### Evaluation Examples
+
+*   **Basic Absolute Depth Evaluation:**
+    ```bash
+    python eval2results.py /path/to/ground_truth /path/to/predictions --absolute_depth
+    ```
+
+*   **Relative Depth Evaluation in Disparity Space:**
+    ```bash
+    python eval2results.py /path/to/ground_truth /path/to/predictions --relative_depth --disparity
+    ```
+
+*   **Advanced: Evaluate on Obstacles within a 30-60m range:**
+    This example demonstrates how to combine filtering options.
+    ```bash
+    python eval2results.py /path/to/ground_truth /path/to/predictions \
+        --absolute_depth \
+        --labeling obstacle \
+        --labeling_path /path/to/labeling_masks/ \
+        --distance_range "30-60"
+    ```
+
+*   **Full Example with all features:**
+    ```bash
+    python eval2results.py /path/to/ground_truth /path/to/predictions \
+        --config_info configs/config_info.yaml \
+        --absolute_depth \
+        --resize \
+        --num_workers 8 \
+        --distance_range "0-100" \
+        --shadow_mask /path/to/shadow_masks/ \
+        --labeling crater \
+        --labeling_path /path/to/labeling_masks/
+    ```
+
+For more detailed instructions on running evaluations for specific datasets (like LunarSim or Chang'e-3), please see the documentation in their respective folders:
+*   `./lunarsim/README.md`
+*   `./change-3/README.md` -->
+
+## Citation
+
+If you use our work in your research, please consider citing our paper:
+
+```bibtex
+@article{your_name_2025_lunarmde,
+  title={LunarMDE: A Framework for Monocular Depth Estimation on the Moon},
+  author={Your Name and Co-authors},
+  journal={arXiv preprint arXiv:your-paper-id},
+  year={2025}
+}
 ```
