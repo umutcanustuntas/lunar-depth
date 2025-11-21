@@ -70,12 +70,13 @@ We recommend using `conda` to create a clean and isolated environment.
 If you use our work in your research, please consider citing our paper:
 
 ```bibtex
-@article{your_name_2025_lunarmde,
+@article{Aynalysis of Monocular Depth Estimation for Lunar
+Vehicles,
   title={Analysis_of_Monocular_Depth_Estimation_for_Lunar_Vehicles},
-  author={F. Emre Gunes1,♥, Furkan Horoz1,♥, H. Umut Isik1,♥, M. Alp Ozaydin1,♥, Aytac Sekmen1,♥, O. Altay
+  author={Aytac Sekmen1,♥, F. Emre Gunes1,♥, Furkan Horoz1,♥, H. Umut Isik1,♥, M. Alp Ozaydin1,♥, O. Altay
 Topaloglu1,♥, Y. Alp Yeni1, S. Umutcan Ustundas1, H. Ersin Soken2, Erol Sahin1, R. Gokberk Cinbis1,♦, Sinan
 Kalkan1,♦,},
-  journal={arXiv preprint arXiv:your-paper-id},
+  journal={arXiv preprint arXiv:paper-id},
   year={2025}
 }
 ```
