@@ -65,9 +65,11 @@ We recommend using `conda` to create a clean and isolated environment.
     ```
 
 
+
+<!--
 ## Citation
 
-If you use our work in your research, please consider citing our paper:
+1. If you use our work in your research, please consider citing our paper:
 
 ```bibtex
 @article{Aynalysis of Monocular Depth Estimation for Lunar
@@ -80,8 +82,7 @@ Kalkan1,♦,},
   year={2025}
 }
 ```
-
-
+--> 
 
 
 
