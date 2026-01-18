@@ -1,4 +1,4 @@
-# Lunar Depth: A Framework for Monocular Depth Estimation Models for Lunar Rovers
+# Lunar Depth: Benchmarking of Monocular Depth Estimation Models for Lunar Rovers
 
 **Evaluating State-of-the-Art Monocular Depth Estimation Models for Lunar Rover Navigation.**
 
