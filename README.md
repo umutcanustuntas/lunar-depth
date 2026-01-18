@@ -5,7 +5,7 @@
 <p align="center">
   <a href="#multimedia">Multimedia</a> •
   <a href="#installation">Installation</a> •
-  <a href="#citation">Paper</a> •
+ <!-- <a href="#citation">Paper</a> •-->
   <a href="https://github.com/umutcanustuntas/lunar-depth/issues">Contact Us</a>
 </p>
 
