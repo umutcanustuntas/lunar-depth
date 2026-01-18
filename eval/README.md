@@ -87,4 +87,10 @@ python eval2results.py /path/to/gt_folder /path/to/preds_folder \
     --num_workers 8
 ```
 
-
+### Dark Mask Generation Example
+```bash
+python generate_dark_mask.py \
+    --input_folder ./data/LuSNAR/color0_tenth_main \
+    --output_folder ./output/dark_mask \
+    --flat --kernel_sizes 9 --save_normal --no_kernel_suffix
+```
