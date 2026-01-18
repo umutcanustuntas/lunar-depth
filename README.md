@@ -6,17 +6,16 @@
   <a href="#multimedia">Multimedia</a> •
   <a href="#installation">Installation</a> •
   <a href="#citation">Paper</a> •
-  <a href="https://github.com/your-username/LunarMDE/issues">Contact Us</a>
+  <a href="https://github.com/umutcanustuntas/lunar-depth/issues">Contact Us</a>
 </p>
 
 <p align="center">
-  <a href="https://arxiv.org/abs/your-paper-id"><img src="https://img.shields.io/badge/paper-coming%20soon-red.svg" alt="Paper-Link-Coming-Soon"></a>
+  <a href="paper-link"><img src="https://img.shields.io/badge/paper-coming%20soon-red.svg" alt="Paper-Link-Coming-Soon"></a>
   &nbsp;&nbsp;
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>
 
-This repository contains the official implementation of [Analysis of Monocular Depth Estimation for Lunar
-Vehicles](https://arxiv.org/abs/your-paper-id), which systematically evaluates the performance of state-of-the-art Monocular Depth Estimation (MDE) networks for lunar rover missions. \
+This repository contains the official implementation of [Monocular Depth Estimation Models for Lunar Rovers](<!--paper-link -->), which systematically evaluates the performance of state-of-the-art Monocular Depth Estimation (MDE) networks for lunar rover missions. \
 We provide a comprehensive framework for evaluating MDE models on both real-world data from the [Chang'e-3 mission](https://www.nssdc.ac.cn/nssdc_en/html/task/change3.html) and simulation data from the
 [**LunarSim**](https://github.com/PUTvision/LunarSim) and  [**LuSNAR**](https://github.com/zqyu9/LuSNAR-dataset) datasets.  
 
