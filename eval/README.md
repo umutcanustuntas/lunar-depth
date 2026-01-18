@@ -21,7 +21,8 @@ This directory contains a comprehensive and flexible suite of Python scripts for
     *   **Parallel Execution:** Significantly speeds up evaluation on large datasets using multiple CPU cores (`--num_workers`).
     *   **Image Resizing:** Optional on-the-fly resizing of predictions to match ground truth dimensions (`--resize`).
 *   **Utility Scripts:**
-    *   Includes a `pfm2npy.py` script to convert `.pfm` files into `.npy` and normalized 16-bit `.png` files for easier use with other tools.
+    *   Includes `pfm2npy.py` script to convert `.pfm` files into `.npy` and normalized 16-bit `.png` files for easier use with other tools.
+    *   Includes `generate_dark_mask.py` script to generate dark masks for use in shadow evaluation.
 
 ## Installation
 
