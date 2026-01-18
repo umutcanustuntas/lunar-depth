@@ -15,7 +15,7 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>
 
-This repository contains the official implementation of **Benchmarking of Monocular Depth Estimation Models for Lunar Rovers** <!--[Benchmarking of Monocular Depth Estimation Models for Lunar Rovers](paper-link )-->, which systematically evaluates the performance of state-of-the-art Monocular Depth Estimation (MDE) models for lunar rover missions. \
+This repository contains the official implementation of **Benchmarking of Monocular Depth Estimation Models for Lunar Rovers,** <!--[Benchmarking of Monocular Depth Estimation Models for Lunar Rovers](paper-link ),--> which systematically evaluates the performance of state-of-the-art Monocular Depth Estimation (MDE) models for lunar rover missions. \
 We provide a comprehensive framework for evaluating MDE models on both real-world data from the [Chang'e-3 mission](https://www.nssdc.ac.cn/nssdc_en/html/task/change3.html) and simulation data from the
 [**LunarSim**](https://github.com/PUTvision/LunarSim) and  [**LuSNAR**](https://github.com/zqyu9/LuSNAR-dataset) datasets.  
 
