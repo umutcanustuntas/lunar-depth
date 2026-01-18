@@ -66,7 +66,7 @@ We recommend using `conda` to create a clean and isolated environment.
 
 
 ## Citation
-Comming soon...
+Coming soon...
 <!--
 1. If you use our work in your research, please consider citing our paper:
 
