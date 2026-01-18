@@ -1,11 +1,11 @@
-# Lunar Depth: A Framework for Monocular Depth Estimation
+# Lunar Depth: A Framework for Monocular Depth Estimation Models for Lunar Rovers
 
-**Evaluating State-of-the-Art Monocular Depth Estimation for Lunar Rover Navigation.**
+**Evaluating State-of-the-Art Monocular Depth Estimation Models for Lunar Rover Navigation.**
 
 <p align="center">
   <a href="#multimedia">Multimedia</a> •
   <a href="#installation">Installation</a> •
- <!-- <a href="#citation">Paper</a> •-->
+  <a href="#citation">Paper</a> •
   <a href="https://github.com/umutcanustuntas/lunar-depth/issues">Contact Us</a>
 </p>
 
@@ -15,7 +15,7 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>
 
-This repository contains the official implementation of [Monocular Depth Estimation Models for Lunar Rovers](<!--paper-link -->), which systematically evaluates the performance of state-of-the-art Monocular Depth Estimation (MDE) networks for lunar rover missions. \
+This repository contains the official implementation of **Monocular Depth Estimation Models for Lunar Rovers** <!--[Monocular Depth Estimation Models for Lunar Rovers](paper-link )-->, which systematically evaluates the performance of state-of-the-art Monocular Depth Estimation (MDE) models for lunar rover missions. \
 We provide a comprehensive framework for evaluating MDE models on both real-world data from the [Chang'e-3 mission](https://www.nssdc.ac.cn/nssdc_en/html/task/change3.html) and simulation data from the
 [**LunarSim**](https://github.com/PUTvision/LunarSim) and  [**LuSNAR**](https://github.com/zqyu9/LuSNAR-dataset) datasets.  
 
