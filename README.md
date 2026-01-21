@@ -24,13 +24,9 @@ We provide a comprehensive framework for evaluating MDE models on both real-worl
 
 ## Multimedia
 
-<!-- Placeholder for a compelling GIF or image showing the system in action. 
-     For example, a side-by-side of a rover camera view and the generated depth map. -->
-<p align="center">
-  <img src="/home/fatih/Downloads/Qualitative Results_cropped.pdf" alt="Lunar MDE in Action" width="80%"/>
-</p>
 
----
+## 🎥 Demo Video
+[![Demo Video](https://img.youtube.com/vi/G1rYp-F2MTE/hqdefault.jpg)](https://www.youtube.com/watch?v=G1rYp-F2MTE)
 
 
 ## Key Features
